@@ -65,6 +65,7 @@ class MagnifierMap(QgsMapCanvasItem):
         self.map_point = None
 
     def setLayers(self, layers:List[QgsMapLayer]):
+        del self.layers[:]
         self.layers = [ item for item in layers ]
 
     def setMapPoint(self, point:QgsPointXY)->None:

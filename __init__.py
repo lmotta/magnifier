@@ -97,6 +97,10 @@ class Magnifier(QObject):
     @pyqtSlot(bool)
     def on_Clicked(self, enabled:bool)->None:
         if enabled:
+            if not self.maptool.canExecute():
+                self.action.setChecked(False)
+                return
+
             self.previus_maptool = self.canvas.mapTool()
             self.canvas.setMapTool( self.maptool )
             return

@@ -35,8 +35,15 @@ from qgis.PyQt.QtCore import (
 from qgis.PyQt.QtGui import QCursor
 
 
-from qgis.core import QgsLayerTreeLayer, QgsMapLayer, QgsProject
-from qgis.gui import QgisInterface, QgsMapTool, QgsMapMouseEvent
+from qgis.core import (
+    QgsLayerTreeLayer, QgsMapLayer,
+    QgsProject
+)
+from qgis.gui import (
+    QgisInterface,
+    QgsMapTool, QgsMapToolPan,
+    QgsMapMouseEvent
+)
 
 from .magnifiermap import MagnifierMap
 from .translate import tr
@@ -48,14 +55,15 @@ class MagnifierTool(QgsMapTool):
         super().__init__( self.canvas )
         self.view = iface.layerTreeView()
         self.msg_bar = iface.messageBar()
+        self.project = QgsProject.instance()
         self.title = title
         self.magnifier_map = MagnifierMap( self.canvas )
-        self.enabled_magnifier = None
+        self.enabled_magnifier = False
 
         self._signal_slot = (
-            { 'signal': QgsProject.instance().removeAll, 'slot': self.disable },
+            { 'signal': self.project.removeAll, 'slot': self.disable },
             { 'signal': self.view.selectionModel().selectionChanged, 'slot': self.setLayers },
-            { 'signal': self.canvas.mapCanvasRefreshed, 'slot': self.magnifier_map.setMap }
+            { 'signal': self.canvas.extentsChanged, 'slot': self.magnifier_map.setMap }
         )
   
     def _connect(self, isConnect:bool = True)->None:
@@ -67,6 +75,76 @@ class MagnifierTool(QgsMapTool):
         for item in self._signal_slot:
             item['signal'].disconnect( item['slot'] )
 
+    def canExecute(self):
+        if not len( self.project.mapLayers() ):
+            self.msg_bar.pushWarning( self.title, tr('Missing layers in legend.') )
+            return False
+        
+        return True
+
+    @pyqtSlot()
+    def disable(self):
+        self.magnifier_map.clear() # OUT self.magnifier_map.setMap
+        self.enabled_magnifier = False
+
+    @pyqtSlot(QItemSelection,QItemSelection)
+    def setLayers(self, selected:QItemSelection, deselected:QItemSelection)->None:
+        def finished(layers:List[QgsMapLayer], message:str)->None:
+            self.magnifier_map.setLayers( layers )
+            self.magnifier_map.setMap()
+
+            self.msg_bar.clearWidgets()
+            self.msg_bar.pushInfo( self.title, message )
+
+        if not self.enabled_magnifier:
+            return
+
+        node = self.view.currentNode()
+        if node is None: # Example BAND (tree item)
+            return
+
+        if self.project.layerTreeRoot() == node:
+            self.disable()
+            self.msg_bar.clearWidgets()
+            return
+
+        if node.itemVisibilityChecked():
+            node.setItemVisibilityChecked( False )
+
+        if isinstance( node, QgsLayerTreeLayer ):
+            layer = node.layer()
+            if layer in self.magnifier_map.layers:
+                return
+
+            if not layer.isSpatial():
+                f = tr("Active layer '{}' need be a spatial layer.")
+                msg = f.format( layer.name() )
+                self.msgBar.pushWarning( self.pluginName, msg )
+
+                return
+
+            layers = [ layer ]
+            f = tr("Active layer is '{}'.")
+            msg = f.format( layer.name() )
+            finished( layers, msg )
+
+            return
+
+        # Group
+        layers = [ ltl.layer() for ltl in node.findLayers() if ltl.itemVisibilityChecked() ]
+        if len( layers ) ==  0:
+            self.msg_bar.clearWidgets()
+            f = tr("Active group '{}' need at least one item with visible checked")
+            msg = f.format( node.name() )
+            self.msg_bar.pushWarning( self.title, msg )
+
+            return
+
+        f = tr("Active group is '{}'.")
+        msg = f.format( node.name() )
+        finished( layers, msg )
+
+    # QgsMapTool Signals
     @pyqtSlot()
     def activate(self)->None:
         super().activate()
@@ -79,7 +157,7 @@ class MagnifierTool(QgsMapTool):
     def deactivate(self)->None:
         super().deactivate()
         self.deactivated.emit()
-        self.magnifier_map.clear()
+        self._connect( False )
         self.disable()
 
     @pyqtSlot(QgsMapMouseEvent)
@@ -103,61 +181,4 @@ class MagnifierTool(QgsMapTool):
             return
 
         self.magnifier_map.setMapPoint( e.mapPoint() )
-
-    @pyqtSlot(QItemSelection,QItemSelection)
-    def setLayers(self, selected:QItemSelection, deselected:QItemSelection)->None:
-        def finished(layers:List[QgsMapLayer], message:str)->None:
-            self.magnifier_map.clear()
-            self.magnifier_map.setLayers( layers )
-            self.magnifier_map.setMap()
-
-            self.msg_bar.clearWidgets()
-            self.msg_bar.pushInfo( self.title, message )
-
-        if not self.enabled_magnifier:
-            return
-
-        layers, msg = None, None
-        node = self.view.currentNode()
-        if node.itemVisibilityChecked():
-            node.setItemVisibilityChecked( False )
-
-        if isinstance( node, QgsLayerTreeLayer ):
-            layer = node.layer()
-            if not layer.isSpatial():
-                f = tr("Active layer '{}' need be a spatial layer.")
-                msg = f.format( layer.name() )
-                self.msgBar.pushWarning( self.pluginName, msg )
-
-                return
-
-            layers = [ layer ]
-            f = tr("Active layer is '{}'.")
-            msg = f.format( layer.name() )
-            finished( layers, msg )
-
-            return
-
-        group = self.view.currentGroupNode()
-        if group.parent() is None: # Root
-            return
-
-        layers = [ ltl.layer() for ltl in group.findLayers() if ltl.itemVisibilityChecked() ]
-        if len( layers ) ==  0:
-            self.msg_bar.clearWidgets()
-            f = tr("Active group '{}' need at least one item with visible checked")
-            msg = f.format( group.name() )
-            self.msg_bar.pushWarning( self.title, msg )
-
-            return
-
-        f = tr("Active group is '{}'.")
-        msg = f.format( group.name() )
-        finished( layers, msg )
-
-    @pyqtSlot()
-    def disable(self):
-        self._connect( False )
-        self.magnifier_map.clear()
-        self.enabled_magnifier = False
         
