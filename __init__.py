@@ -104,6 +104,7 @@ class Magnifier(QObject):
             self.previus_maptool = self.canvas.mapTool()
             self.canvas.setMapTool( self.maptool )
             return
+
         self.canvas.setMapTool( self.previus_maptool )
 
     @pyqtSlot(QgsMapTool, QgsMapTool)
