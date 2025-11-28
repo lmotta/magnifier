@@ -1,0 +1,34 @@
+[general]
+name:Magnifier
+description:Plugin to use a magnifier to show one layer or group over cursor.
+about:This plugin allows users to see the a layer or group.
+       
+      This plugin is part of the Brazilian Fire Information System (Sisfogo),
+      develop by National Center to Prevent and Combat Forest fires (Prevfogo/Ibama).
+
+       Documentation:
+       <a href="https://raw.githubusercontent.com/lmotta/bdc_catalog/refs/heads/main/doc/bdc_catalog_en.pdf">English</a>
+       <a href="https://raw.githubusercontent.com/lmotta/bdc_catalog/refs/heads/main/doc/bdc_catalog_pt.pdf">Portuguese</a>
+
+
+author:Luiz Motta
+email:motta.luiz@gmail.com
+
+version:0.1
+qgisMinimumVersion:3.40
+
+experimental:True
+deprecated:False
+
+icon:./resources/magnifier.svg
+tags:Magnifier, Sisfogo, Prevfogo 
+
+#category:Web
+
+homepage:https://github.com/lmotta/bdc_catalog/wiki
+tracker:https://github.com/lmotta/bdc_catalog/issues
+repository:https://github.com/lmotta/bdc_catalog
+
+changelog:
+    - 0.1 (2025-11-27)
+    Started
