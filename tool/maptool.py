@@ -77,7 +77,7 @@ class MagnifierTool(QgsMapTool):
 
     def canExecute(self):
         if not len( self.project.mapLayers() ):
-            self.msg_bar.pushWarning( self.title, tr('Missing layers in legend.') )
+            self.msg_bar.pushWarning( self.title, tr('Missing layers required for tool.') )
             return False
         
         return True
@@ -92,6 +92,8 @@ class MagnifierTool(QgsMapTool):
         def finished(layers:List[QgsMapLayer], message:str)->None:
             self.magnifier_map.setLayers( layers )
             self.magnifier_map.setMap()
+
+            node.setItemVisibilityChecked( False )
 
             self.msg_bar.clearWidgets()
             self.msg_bar.pushInfo( self.title, message )
@@ -108,8 +110,6 @@ class MagnifierTool(QgsMapTool):
             self.msg_bar.clearWidgets()
             return
 
-        if node.itemVisibilityChecked():
-            node.setItemVisibilityChecked( False )
 
         if isinstance( node, QgsLayerTreeLayer ):
             layer = node.layer()
@@ -123,10 +123,10 @@ class MagnifierTool(QgsMapTool):
 
                 return
 
-            layers = [ layer ]
+            node.setItemVisibilityChecked( True )
             f = tr("Active layer is '{}'.")
             msg = f.format( layer.name() )
-            finished( layers, msg )
+            finished( [ layer ], msg )
 
             return
 
@@ -160,24 +160,21 @@ class MagnifierTool(QgsMapTool):
         self._connect( False )
         self.disable()
 
-    @pyqtSlot(QgsMapMouseEvent)
-    def canvasPressEvent(self, e:QgsMapMouseEvent)->None:
-        if len( self.magnifier_map.layers ) == 0:
-            self.msg_bar.clearWidgets()
-            self.msg_bar.pushWarning( self.title, tr('Select Layer or Group in legend.') )
+    # @pyqtSlot(QgsMapMouseEvent)
+    # def canvasPressEvent(self, e:QgsMapMouseEvent)->None:
+    #     if not self.enabled_magnifier or not self.magnifier_map.layers:
+    #         return
 
-            return
+    # @pyqtSlot(QgsMapMouseEvent)
+    # def canvasReleaseEvent(self, e:QgsMapMouseEvent)->None:
+    #     if not self.enabled_magnifier or not self.magnifier_map.layers:
+    #         return
 
-    @pyqtSlot(QgsMapMouseEvent)
-    def canvasReleaseEvent(self, e:QgsMapMouseEvent)->None:
-        if not self.enabled_magnifier or len( self.magnifier_map.layers ) == 0:
-            return
-
-        #self.magnifier_map.setMapPoint( e.mapPoint() )
+    #     #self.magnifier_map.setMapPoint( e.mapPoint() )
     
     @pyqtSlot(QgsMapMouseEvent)
     def canvasMoveEvent(self, e:QgsMapMouseEvent)->None:
-        if not self.enabled_magnifier or len( self.magnifier_map.layers ) == 0:
+        if not self.enabled_magnifier or not self.magnifier_map.layers:
             return
 
         self.magnifier_map.setMapPoint( e.mapPoint() )
