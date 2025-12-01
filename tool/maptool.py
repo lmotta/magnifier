@@ -30,7 +30,8 @@ from qgis.PyQt.QtCore import (
   Qt,
   QPoint,
   pyqtSlot,
-  QItemSelection
+  QItemSelection,
+  QModelIndex
 )
 from qgis.PyQt.QtGui import QCursor
 
@@ -59,11 +60,31 @@ class MagnifierTool(QgsMapTool):
         self.title = title
         self.magnifier_map = MagnifierMap( self.canvas )
         self.enabled_magnifier = False
+        self.toggle_magnifier = False # If True, the magnifier will be toggled when the mouse is released
+        self.current_magnifier = None
 
         self._signal_slot = (
             { 'signal': self.project.removeAll, 'slot': self.disable },
-            { 'signal': self.view.selectionModel().selectionChanged, 'slot': self.setLayers },
-            { 'signal': self.canvas.extentsChanged, 'slot': self.magnifier_map.setMap }
+            { 'signal': self.view.selectionModel().currentChanged, 'slot': self.setLayers },
+            
+            # {
+            #     'signal': self.view.selectionModel().currentChanged,
+            #     'slot': lambda current, previus: print( f"{ 'Nothing' if current is None else current.data() }" )
+            # },
+
+            { 'signal': self.canvas.extentsChanged, 'slot': self.magnifier_map.setMap },
+            # self.magnifier_map Signals
+            {
+                'signal': self.magnifier_map.signals.creatingImage,
+                'slot': lambda: self.msg_bar.pushInfo(
+                    self.title,
+                    tr('Magnifier image rendering in progress ({})...').format( self.current_magnifier )
+                )
+            },
+            {
+                'signal': self.magnifier_map.signals.finishedImage,
+                'slot': lambda: self.msg_bar.clearWidgets()
+            }
         )
   
     def _connect(self, isConnect:bool = True)->None:
@@ -84,25 +105,21 @@ class MagnifierTool(QgsMapTool):
 
     @pyqtSlot()
     def disable(self):
-        self.magnifier_map.clear() # OUT self.magnifier_map.setMap
+        self.magnifier_map.clear()
         self.enabled_magnifier = False
-
-    @pyqtSlot(QItemSelection,QItemSelection)
-    def setLayers(self, selected:QItemSelection, deselected:QItemSelection)->None:
-        def finished(layers:List[QgsMapLayer], message:str)->None:
+  
+    @pyqtSlot(QModelIndex,QModelIndex)
+    def setLayers(self, current:QModelIndex, previous:QModelIndex)->None:
+        def finished(layers:List[QgsMapLayer])->None:
             self.magnifier_map.setLayers( layers )
             self.magnifier_map.setMap()
-
             node.setItemVisibilityChecked( False )
 
-            self.msg_bar.clearWidgets()
-            self.msg_bar.pushInfo( self.title, message )
-
-        if not self.enabled_magnifier:
+        if not self.enabled_magnifier or current is None:
             return
 
-        node = self.view.currentNode()
-        if node is None: # Example BAND (tree item)
+        node = self.view.index2node( current )
+        if node is None: # index is subtree
             return
 
         if self.project.layerTreeRoot() == node:
@@ -110,6 +127,7 @@ class MagnifierTool(QgsMapTool):
             self.msg_bar.clearWidgets()
             return
 
+        self.current_magnifier = node.name()
 
         if isinstance( node, QgsLayerTreeLayer ):
             layer = node.layer()
@@ -124,9 +142,7 @@ class MagnifierTool(QgsMapTool):
                 return
 
             node.setItemVisibilityChecked( True )
-            f = tr("Active layer is '{}'.")
-            msg = f.format( layer.name() )
-            finished( [ layer ], msg )
+            finished( [ layer ] )
 
             return
 
@@ -139,10 +155,8 @@ class MagnifierTool(QgsMapTool):
             self.msg_bar.pushWarning( self.title, msg )
 
             return
-
-        f = tr("Active group is '{}'.")
-        msg = f.format( node.name() )
-        finished( layers, msg )
+        
+        finished( layers )
 
     # QgsMapTool Signals
     @pyqtSlot()
@@ -151,7 +165,7 @@ class MagnifierTool(QgsMapTool):
         self.canvas.setCursor( QCursor( Qt.CrossCursor ) )
         self._connect()
         self.enabled_magnifier = True
-        self.setLayers( None, None )
+        self.setLayers( self.view.currentIndex(), None )
 
     @pyqtSlot()
     def deactivate(self)->None:
@@ -165,17 +179,22 @@ class MagnifierTool(QgsMapTool):
     #     if not self.enabled_magnifier or not self.magnifier_map.layers:
     #         return
 
-    # @pyqtSlot(QgsMapMouseEvent)
-    # def canvasReleaseEvent(self, e:QgsMapMouseEvent)->None:
-    #     if not self.enabled_magnifier or not self.magnifier_map.layers:
-    #         return
+    @pyqtSlot(QgsMapMouseEvent)
+    def canvasReleaseEvent(self, e:QgsMapMouseEvent)->None:
+        if not self.enabled_magnifier or not self.magnifier_map.layers:
+            return
 
-    #     #self.magnifier_map.setMapPoint( e.mapPoint() )
-    
+        self.toggle_magnifier = not self.toggle_magnifier
+        if self.toggle_magnifier:
+            pass
+
     @pyqtSlot(QgsMapMouseEvent)
     def canvasMoveEvent(self, e:QgsMapMouseEvent)->None:
         if not self.enabled_magnifier or not self.magnifier_map.layers:
             return
 
-        self.magnifier_map.setMapPoint( e.mapPoint() )
+        if self.toggle_magnifier:
+            return
+
+        self.magnifier_map.setPixelPoint( e.pixelPoint() )
         
