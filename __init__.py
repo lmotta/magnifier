@@ -65,8 +65,8 @@ class Magnifier(QObject):
         self.action = QAction( icon, self.action_name, self.iface.mainWindow() )
         self.action.setToolTip( self.action_name )
         self.action.setCheckable(True)
-        self.action.triggered.connect(self.on_Clicked)
 
+        self.action.triggered.connect(self.on_Clicked)
         self.canvas.mapToolSet.connect( self.on_MapToolSet )
 
         self.maptool = MagnifierTool( self.plugin_name, self.iface )

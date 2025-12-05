@@ -36,6 +36,13 @@ from qgis.PyQt.QtGui import (
     QImage, QPainter, QPainterPath,
     QRegion
 )
+from qgis.PyQt.QtWidgets import (
+    QWidget, QLabel, QSlider,
+    QComboBox, QDateEdit, QToolButton,
+    QLayout, QHBoxLayout, QStackedLayout,
+    QFileDialog,
+    QSizePolicy    
+)
 
 from qgis.core import (
     QgsMapLayer,
@@ -43,9 +50,7 @@ from qgis.core import (
     QgsMapSettings,
     QgsPointXY, QgsRectangle
 )
-from qgis.gui import (
-    QgsMapCanvas, QgsMapCanvasItem
-)
+from qgis.gui import QgisInterface, QgsMapCanvas, QgsMapCanvasItem
 
 
 class MagnifierSignals(QObject):
@@ -53,17 +58,17 @@ class MagnifierSignals(QObject):
     finishedImage = pyqtSignal()
 
 class MagnifierMap(QgsMapCanvasItem):
-    def __init__(self, canvas:QgsMapCanvas):
+    def __init__(self, canvas:QgsMapCanvas, zoom_factor:int, magnifier_factor:int):
         super().__init__( canvas )
-        self.signals = MagnifierSignals()
+        self.canvas = canvas
+        self.zoom_factor = zoom_factor
+        self.magnifier_factor = magnifier_factor
 
-        self.map_settings = None
-        self.zoom_factor = 4
-        self.magnifier_factor = 2
         self.setZValue(10)
+
+        self.signals = MagnifierSignals()
         self.layers = []
         self.pixel_point = None
-        self.canvas = canvas
         self.image = None
       
     def clear(self)->None:
@@ -71,9 +76,6 @@ class MagnifierMap(QgsMapCanvasItem):
         self.pixel_point = None
         self.image = None
         self.updateCanvas()
-
-    def setLayers(self, layers:List[QgsMapLayer]):
-        self.layers = layers
 
     def setPixelPoint(self, point:QgsPointXY)->None:
         if self.image is None: # Rendering image
@@ -108,8 +110,6 @@ class MagnifierMap(QgsMapCanvasItem):
         offset_y = y * (1 - self.zoom_factor)        
         painter.drawImage( offset_x, offset_y, self.image )
 
-        # --- Acabamento ---
-        # Desenha a borda da lupa (opcional, para melhor visualização)
         painter.setClipping(False)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(Qt.black)
@@ -117,10 +117,11 @@ class MagnifierMap(QgsMapCanvasItem):
         painter.drawEllipse( rect_region )
 
     # It is a slot, the decorator 'pyqtSlot' fail because QgsMapCanvasItem not is QObject
-    def setMap(self):
+    def setImage(self):
         def createMapSettingsWithZoomFactor():
             settings = QgsMapSettings()
             settings.setBackgroundColor(QColor(Qt.transparent))
+            settings.setDevicePixelRatio( 1 )
             settings.setLayers( self.layers )
             settings.setDestinationCrs( self.canvas.mapSettings().destinationCrs() )
             
@@ -131,7 +132,6 @@ class MagnifierMap(QgsMapCanvasItem):
             return settings
 
         def finished():
-            self.image = None
             image = job.renderedImage()
             if bool( self.canvas.property('retro') ):
                 image = image.scaled( image.width() / 3, image.height() / 3 )
@@ -145,10 +145,9 @@ class MagnifierMap(QgsMapCanvasItem):
 
         self.signals.creatingImage.emit()
 
-        self.map_settings = createMapSettingsWithZoomFactor()
-        
         self.setRect( self.canvas.extent() )
-        job = QgsMapRendererParallelJob( self.map_settings ) 
+        self.image = None
+        job = QgsMapRendererParallelJob( createMapSettingsWithZoomFactor() ) 
         job.start()
         job.finished.connect( finished ) 
         #job.waitForFinished()
