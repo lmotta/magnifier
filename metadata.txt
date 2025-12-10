@@ -7,8 +7,9 @@ about:This plugin allows users to see the a layer or group.
       develop by National Center to Prevent and Combat Forest fires (Prevfogo/Ibama).
 
        Documentation:
-       <a href="https://raw.githubusercontent.com/lmotta/bdc_catalog/refs/heads/main/doc/bdc_catalog_en.pdf">English</a>
-       <a href="https://raw.githubusercontent.com/lmotta/bdc_catalog/refs/heads/main/doc/bdc_catalog_pt.pdf">Portuguese</a>
+       <a href="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/magnifier_en.pdf">English</a>
+       <a href="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/magnifier_es.pdf">Spanish</a>
+       <a href="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/magnifier_pt.pdf">Portuguese</a>
 
 
 author:Luiz Motta
@@ -23,12 +24,10 @@ deprecated:False
 icon:./resources/magnifier.svg
 tags:Magnifier, Sisfogo, Prevfogo 
 
-#category:Web
-
-homepage:https://github.com/lmotta/bdc_catalog/wiki
-tracker:https://github.com/lmotta/bdc_catalog/issues
-repository:https://github.com/lmotta/bdc_catalog
+homepage:https://github.com/lmotta/magnifier/wiki
+tracker:https://github.com/lmotta/magnifier/issues
+repository:https://github.com/lmotta/magnifier
 
 changelog:
-    - 0.1 (2025-11-27)
+    - 0.1 (2025-12-09)
     Started

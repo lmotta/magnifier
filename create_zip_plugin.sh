@@ -12,13 +12,13 @@ fi
 mkdir "./$plugin_dir"
 # Copy files
 cp *.py "./$plugin_dir"
-for item in metadata.txt LICENSE mapswipetool.png; do cp "./$item" "./$plugin_dir"; done
+for item in __init__.py metadata.txt LICENSE; do cp "./$item" "./$plugin_dir"; done
+cp -r ./tool "./$plugin_dir"
+rm -r "./$plugin_dir/tool/__pycache__"
+cp -r ./resources "./$plugin_dir"
 # Create Translate files
 mkdir "./$plugin_dir/i18n"
-cp ./i18n/*.ts "./$plugin_dir/i18n"
-cd "./$plugin_dir/i18n"
-for item in $(ls *.ts); do lrelease -silent $item; rm $item; done
-cd ../..
+cp ./i18n/*.qm "./$plugin_dir/i18n"
 # Create Zip and remove Plugin Directory
 zip -q -r "$plugin_dir.zip" "./$plugin_dir"
 rm -r "./$plugin_dir"

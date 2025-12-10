@@ -1,39 +1,30 @@
-<!-- IBAMA logo -->
-[ibama_logo]: http://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Logo_IBAMA.svg/150px-Logo_IBAMA.svg.png
+<p align="center">
+  <a href="https://www.gov.br/ibama/pt-br">
+    <img src="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/ibama_logo.png" alt="IBAMA logo" width="200" style="margin-right: 30px;"/>
+  </a>
+  <a href="https://www.gov.br/ibama/pt-br/assuntos/fiscalizacao-e-protecao-ambiental/manejo-integrado-do-fogo/prevfogo">
+    <img src="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/prevfogo_logo.png" alt="PREVFOGO logo" width="100"/>
+  </a>
+</p>
 
-![][ibama_logo]  
-[Brazilian Institute of Environment and Renewable Natural Resources](http://www.ibama.gov.br)
+# Magnifier Plugin
 
-<!-- APPTEC logo -->
-[apptec_logo]: http://www.apptec.co.jp/assets/images/header_ci.png
+This plugin create a magnifier to show one layer or group over cursor.  
 
-![][apptec_logo]  
-[APPLIED TECHNOLOGY CO.,LTD.](http://www.apptec.co.jp)
+## Sisfogo Project
+This plugin is part of the Brazilian Fire Information System (Sisfogo), develop by National Center to Prevent and Combat Forest fires (Prevfogo/Ibama).
 
-# Swipe active layer Plugin QGIS
+## Documentation:
+<ul>
+  <li><a href="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/magnifier_en.pdf">English</a></li>
+  <li><a href="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/magnifier_pt.pdf">Portuguese</a></li>
+  <li><a href="https://raw.githubusercontent.com/lmotta/magnifier/refs/heads/main/doc/magnifier_es.pdf">Spanish</a></li>
+</ul>
 
-This plugin is a map tool for swipe active layer, for example, you can see the difference with others layers below.
-The active layer, or group, will appear above all others.
 
 ## Author
-Hirofumi Hayashi and Luiz Motta
-
-## Current limitations
-This version is not yet cooperate with rotate map function.
+Luiz Motta
 
 ## Changelog
-- 2024-05-31
-Fixed def paint and setLenght by Heryx
-- 2018-12-06
-Update metadata
-- 2018-10-23
-Fixed translate
-- 2018-10-18
-Migrated to QGIS 3.2
-- 2015-10-16
-Added Plugins dropdown Menu and when activated plugin, if click it will deactivate plugin
-- 2015-10-15
-Fixed the bug for installation in Windows and when change of layer/group in legend for others OS (Ex. Windows) 
-- 2015-10-14
- Initial plugin
-
+- 2025-12-09  
+ Initial version of the plugin

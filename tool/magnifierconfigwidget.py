@@ -10,9 +10,10 @@ email                : motta.luiz@gmail.com
 """
 
 __author__ = 'Luiz Motta'
-__date__ = '2025-12-01'
+__date__ = '2015-12-10'
 __copyright__ = '(C) 2025, Luiz Motta'
 __revision__ = '$Format:%H$'
+
 
 from qgis.PyQt.QtCore import Qt, pyqtSlot
 from qgis.PyQt.QtWidgets import (

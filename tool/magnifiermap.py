@@ -1,56 +1,39 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : Magnifier tool
-Description          : Plugin for magnifier active layer
-Date                 : November, 2025
+Name                 : Magnifier Map
+Description          : Magnifier Logic
+Date                 : December, 2025
 copyright            : (C) 2025 by Luiz Motta
 email                : motta.luiz@gmail.com
-
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
  ***************************************************************************/
 """
 
 __author__ = 'Luiz Motta'
-__date__ = '2025-11-27'
+__date__ = '2015-12-10'
 __copyright__ = '(C) 2025, Luiz Motta'
 __revision__ = '$Format:%H$'
 
-from typing import List
 
 from qgis.PyQt.QtCore import (
     Qt,
-    QPoint, QLine, QRect,
+    QRect,
     QObject, pyqtSignal
 )
 from qgis.PyQt.QtGui import (
     QColor,
-    QImage, QPainter, QPainterPath,
+    QImage, QPainter,
     QRegion
-)
-from qgis.PyQt.QtWidgets import (
-    QWidget, QLabel, QSlider,
-    QComboBox, QDateEdit, QToolButton,
-    QLayout, QHBoxLayout, QStackedLayout,
-    QFileDialog,
-    QSizePolicy    
 )
 
 from qgis.core import (
-    QgsMapLayer,
     QgsMapRendererParallelJob,
     QgsMapSettings,
-    QgsPointXY, QgsRectangle
+    QgsPointXY
 )
-from qgis.gui import QgisInterface, QgsMapCanvas, QgsMapCanvasItem
+from qgis.gui import (
+    QgsMapCanvas, QgsMapCanvasItem
+)
 
 
 class MagnifierSignals(QObject):
@@ -59,11 +42,10 @@ class MagnifierSignals(QObject):
 
 class MagnifierMap(QgsMapCanvasItem):
     def __init__(self, canvas:QgsMapCanvas, zoom_factor:int, magnifier_factor:int):
-        super().__init__( canvas )
         self.canvas = canvas
         self.zoom_factor = zoom_factor
         self.magnifier_factor = magnifier_factor
-
+        super().__init__( canvas )
         self.setZValue(10)
 
         self.signals = MagnifierSignals()

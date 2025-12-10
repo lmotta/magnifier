@@ -1,27 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : Magnifier tool
-Description          : Plugin for magnifier active layer
-Date                 : October, 2025
+Name                 : Magnifier Plugin
+Description          : Plugin for use active layer in magnifier
+Date                 : December, 2025
 copyright            : (C) 2025 by Luiz Motta
 email                : motta.luiz@gmail.com
-
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+***************************************************************************/
 """
 
 __author__ = 'Luiz Motta'
-__date__ = '2025-11-27'
-__copyright__ = '(C) 2025, Luiz Motta'
+__date__ = '2015-12-10'
+__copyright__ = '(C) 2018, Luiz Motta'
 __revision__ = '$Format:%H$'
 
 
@@ -42,9 +32,9 @@ from .tool.translate import setTranslation
 
 
 def classFactory(iface:QgisInterface):
-    return Magnifier( iface )
+    return MagnifierPlugin( iface )
 
-class Magnifier(QObject):
+class MagnifierPlugin(QObject):
 
     def __init__(self, iface:QgisInterface):
         super().__init__()
@@ -57,7 +47,7 @@ class Magnifier(QObject):
         self.action_name = 'Magnifier'
         self.action = None
         self.maptool = None
-        self.previus_maptool = None
+        self.previus_maptool = None # Define by run
 
     def initGui(self):
         path = QDir( os.path.dirname(__file__) )
@@ -73,12 +63,12 @@ class Magnifier(QObject):
         self.previus_maptool = self.canvas.mapTool()
 
         self.menu_name = f"&{self.action_name}"
-        self.iface.addPluginToWebMenu( self.menu_name, self.action )
-        self.iface.webToolBar().addAction(self.action)
+        self.iface.addPluginToMenu( self.menu_name, self.action )
+        self.iface.addToolBarIcon( self.action )
 
     def unload(self)->None:
         self.iface.removePluginMenu( self.menu_name, self.action )
-        self.iface.webToolBar().removeAction( self.action )
+        self.iface.removeToolBarIcon( self.action )
         self.iface.unregisterMainWindowAction( self.action )
         
         if self.maptool:
@@ -92,7 +82,6 @@ class Magnifier(QObject):
         self.action.deleteLater()
 
         del self.maptool
-
 
     @pyqtSlot(bool)
     def on_Clicked(self, enabled:bool)->None:

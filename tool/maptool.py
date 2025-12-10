@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : Magnifier tool
-Description          : Plugin for magnifier active layer
-Date                 : November, 2025
+Name                 : Maptool
+Description          : Maptool for Magnifier
+Date                 : December, 2025
 copyright            : (C) 2025 by Luiz Motta
 email                : motta.luiz@gmail.com
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
  ***************************************************************************/
 """
 
 __author__ = 'Luiz Motta'
-__date__ = '2025-11-27'
+__date__ = '2015-12-10'
 __copyright__ = '(C) 2025, Luiz Motta'
 __revision__ = '$Format:%H$'
 
